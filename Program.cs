@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace _4mtr {
     public class Program {
@@ -16,12 +17,33 @@ namespace _4mtr {
 			var choice = Console.ReadKey();
 
 			if(choice.Key.ToString() == "Y"){
+				foreach(var file in files) Format(file);
 				Console.WriteLine("\n\nDone");
 			}
 			else{
 				Console.WriteLine("\n\nExiting");
 			}
         }
+
+		private static void Format(string file) {
+			StringBuilder sb = new StringBuilder();
+			string line;
+			
+			using(StreamReader stream = File.OpenText(file)){
+				while((line = stream.ReadLine()) != null){
+					sb.AppendLine(line.TrimEnd());
+				}
+			}
+
+			if(sb[-1].ToString() != Environment.NewLine) sb.Append(Environment.NewLine);
+
+			try{
+				File.WriteAllText(file, sb.ToString());
+			}
+			catch(Exception ex){
+				Console.WriteLine(ex.Message);
+			}
+		}
 
 		private static List<string> GetTextFileList(string[] args) {
 			var files = new List<string>();
