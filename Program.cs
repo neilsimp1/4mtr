@@ -8,14 +8,14 @@ namespace _4mtr {
     public class Program {
 
         public static void Main(string[] args) {
+			Console.WriteLine(DateTime.Now.ToString("0:MM/dd/yyy HH:mm:ss.fff") + "\n");////////////////////////
 			var files = GetTextFileList(args);
+			Console.WriteLine(DateTime.Now.ToString("0:MM/dd/yyy HH:mm:ss.fff") + "\n");////////////////////////
 
-			foreach(var file in files){
-				Console.WriteLine(file);
-			}
+			foreach(var file in files) Console.WriteLine(file);
 			Console.WriteLine("\nRun 4mtr on these files? y/n");
-			var choice = Console.ReadKey();
 
+			var choice = Console.ReadKey();
 			if(choice.Key.ToString() == "Y"){
 				foreach(var file in files) Format(file);
 				Console.WriteLine("\n\nDone");
@@ -23,7 +23,7 @@ namespace _4mtr {
 			else{
 				Console.WriteLine("\n\nExiting");
 			}
-        }
+		}
 
 		private static void Format(string file) {
 			StringBuilder sb = new StringBuilder();
@@ -34,8 +34,8 @@ namespace _4mtr {
 					sb.AppendLine(line.TrimEnd());
 				}
 			}
-
-			if(sb[-1].ToString() != Environment.NewLine) sb.Append(Environment.NewLine);
+			
+			if(sb[sb.Length - 1].ToString() != Environment.NewLine) sb.Append(Environment.NewLine);
 
 			try{
 				File.WriteAllText(file, sb.ToString());
@@ -46,16 +46,21 @@ namespace _4mtr {
 		}
 
 		private static List<string> GetTextFileList(string[] args) {
+			var ignores = new List<string>();
+			ignores.Add("node_modules");
+
 			var files = new List<string>();
 
-			var inputs = args.ToList();			
+			var inputs = args.ToList();
 			if(inputs.Count == 0) inputs.Add(Directory.GetCurrentDirectory());
 
 			foreach(var input in inputs){
+				var filename = new DirectoryInfo(input).Name;
 				if(Directory.Exists(input)){
 					files.AddRange(
 						Directory.GetFiles(input, "*.*", SearchOption.AllDirectories)
 							.Select(file => Path.GetFullPath(file))
+							.Where(file => !ignores.Contains(filename))
 							.Where(file => !file.Contains(@"\.") && !file.Contains("/."))
 							.Where(file => IsTextFile(file))
 							.ToList()
@@ -73,7 +78,9 @@ namespace _4mtr {
 			try{
 				using(StreamReader stream = File.OpenText(file)){
 					int ch;
-					while((ch = stream.Read()) != -1){
+					var counter = 0;
+					while((ch = stream.Read()) != -1 && counter < 100){
+						counter++;
 						if(IsControlChar(ch)) return false;
 					}
 				}
