@@ -10,14 +10,17 @@ namespace _4mtr {
 			var files = GetTextFileList(args);
 
 			foreach(var file in files){
-
+				Console.WriteLine(file);
 			}
+			Console.WriteLine("\nRun 4mtr on these files? y/n");
+			var choice = Console.ReadKey();
 
-			//var cwd = Directory.GetCurrentDirectory();
-
-			//var files = ;
-
-            var asd = 123;
+			if(choice.Key.ToString() == "Y"){
+				Console.WriteLine("\n\nDone");
+			}
+			else{
+				Console.WriteLine("\n\nExiting");
+			}
         }
 
 		private static List<string> GetTextFileList(string[] args) {
@@ -30,13 +33,14 @@ namespace _4mtr {
 				if(Directory.Exists(input)){
 					files.AddRange(
 						Directory.GetFiles(input, "*.*", SearchOption.AllDirectories)
-							.Select(file => Path.GetFileName(file))
+							.Select(file => Path.GetFullPath(file))
+							.Where(file => !file.Contains(@"\.") && !file.Contains("/."))
 							.Where(file => IsTextFile(file))
 							.ToList()
 					);
 				}
 				else if(File.Exists(input)){
-					if(IsTextFile(input)) files.Add(input);
+					if(IsTextFile(input)) files.Add(Path.GetFullPath(input));
 				}
 			}
 
@@ -44,13 +48,18 @@ namespace _4mtr {
 		}
 
 		private static bool IsTextFile(string file) {
-			using(StreamReader stream = File.OpenText(file)){
-				int ch;
-				while((ch = stream.Read()) != -1){
-					if(IsControlChar(ch)) return false;
+			try{
+				using(StreamReader stream = File.OpenText(file)){
+					int ch;
+					while((ch = stream.Read()) != -1){
+						if(IsControlChar(ch)) return false;
+					}
 				}
+				return true;
 			}
-			return true;
+			catch(Exception){
+				return false;
+			}
 		}
 
 		private static bool IsControlChar(int ch) {
