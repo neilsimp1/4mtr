@@ -15,6 +15,10 @@ Give a list of files or directories to 4mtr. For all text files found, 4mtr will
 
 Specify a line ending character. If this is not specified, it swill use the system default.
 Options are `n`, `r`, or `rn`.
+Ex.
+```
+$ 4mtr -e n project1/
+```
 
 ## Other
 4mtr will currently ignore any files underneath directories with the names
