@@ -1,5 +1,5 @@
 ﻿# 4mtr
-## Simple, opinionated text file formatter
+### Simple, opinionated text file formatter
 
 ```
 $ 4mtr project1/ project2/ file1.txt file2.cs
