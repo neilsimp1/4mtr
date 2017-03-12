@@ -2,7 +2,7 @@
   "profiles": {
     "4mtr": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\temp\\4mtr -e r"
+      "commandLineArgs": "C:\\temp\\4mtr"
     }
   }
 }

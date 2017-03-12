@@ -40,6 +40,13 @@ namespace _4mtr {
 				}
 			}
 
+			var length = options.LineEnding.Length;
+			while(sb.ToString().EndsWith(options.LineEnding)){
+				var asd = sb.ToString();
+				sb.Remove(sb.Length - length, length);
+			}
+			sb.Append(options.LineEnding);
+
 			try{
 				File.WriteAllText(file, sb.ToString());
 			}
