@@ -8,7 +8,9 @@ using CommandLine;
 namespace _4mtr {
     public class Program {
 
-        public static int Main(string[] args) {
+		private static List<string> ignores = new List<string>{ "node_modules", "bower_components" };
+		
+		public static int Main(string[] args) {
 			var result = CommandLine.Parser.Default.ParseArguments<Options>(args).MapResult((Options options) => Execute(options), errs => 1);
 
 			return result;
@@ -56,27 +58,35 @@ namespace _4mtr {
 		}
 
 		private static List<string> GetTextFileList(Options options) {
-			var ignores = new List<string>{ "node_modules" };
-			var files = new List<string>();
-
 			var inputs = options.Inputs.ToList<string>();
 			if(inputs.Count == 0) inputs.Add(Directory.GetCurrentDirectory());
 
-			foreach(var input in inputs){
-				var filename = new DirectoryInfo(input).Name;
-				if(Directory.Exists(input)){
-					files.AddRange(
-						Directory.GetFiles(input, "*.*", SearchOption.AllDirectories)
-							.Select(file => Path.GetFullPath(file))
-							.Where(file => !ignores.Contains(filename))
-							.Where(file => !file.Contains(@"\.") && !file.Contains("/."))
-							.Where(file => IsTextFile(file))
-							.ToList()
-					);
+			var Scan = new Func<List<string>>(() => {
+				var files = new List<string>();
+				foreach(var input in inputs){
+					if(Directory.Exists(input)) files.AddRange(LoopDir(input, ignores));
+					else if(File.Exists(input)){
+						if(IsTextFile(input)) files.Add(Path.GetFullPath(input));
+					}
 				}
-				else if(File.Exists(input)){
-					if(IsTextFile(input)) files.Add(Path.GetFullPath(input));
-				}
+
+				return files;
+			});
+
+
+			return Scan();
+		}
+
+		private static List<string> LoopDir(string dir, List<string> ignores) {
+			var files = new List<string>();
+
+			foreach(var subdir in Directory.GetDirectories(dir)){
+				var subdirName = new DirectoryInfo(subdir).Name;
+				if(!ignores.Contains(subdirName) & subdirName[0] != '.') files.AddRange(LoopDir(subdir, ignores));
+			}
+			
+			foreach(var file in Directory.GetFiles(dir)){
+				if(IsTextFile(file) & new DirectoryInfo(file).Name[0] != '.') files.Add(file);
 			}
 
 			return files;
