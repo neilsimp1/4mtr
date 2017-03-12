@@ -3,39 +3,42 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using CommandLine;
 
 namespace _4mtr {
     public class Program {
 
-        public static void Main(string[] args) {
-			Console.WriteLine(DateTime.Now.ToString("0:MM/dd/yyy HH:mm:ss.fff") + "\n");////////////////////////
-			var files = GetTextFileList(args);
-			Console.WriteLine(DateTime.Now.ToString("0:MM/dd/yyy HH:mm:ss.fff") + "\n");////////////////////////
+        public static int Main(string[] args) {
+			var result = CommandLine.Parser.Default.ParseArguments<Options>(args).MapResult((Options options) => Execute(options), errs => 1);
 
-			foreach(var file in files) Console.WriteLine(file);
+			return result;
+		}
+
+		private static int Execute(Options options) {
+			var files = GetTextFileList(options);
+
+			foreach (var file in files) Console.WriteLine(file);
 			Console.WriteLine("\nRun 4mtr on these files? y/n");
 
 			var choice = Console.ReadKey();
 			if(choice.Key.ToString() == "Y"){
-				foreach(var file in files) Format(file);
+				foreach(var file in files) Format(file, options);
 				Console.WriteLine("\n\nDone");
 			}
-			else{
-				Console.WriteLine("\n\nExiting");
-			}
+			else Console.WriteLine("\n\nExiting");
+
+			return 0;
 		}
 
-		private static void Format(string file) {
+		private static void Format(string file, Options options) {
 			StringBuilder sb = new StringBuilder();
 			string line;
 			
 			using(StreamReader stream = File.OpenText(file)){
 				while((line = stream.ReadLine()) != null){
-					sb.AppendLine(line.TrimEnd());
+					sb.Append(line.TrimEnd() + options.LineEnding);
 				}
 			}
-			
-			if(sb[sb.Length - 1].ToString() != Environment.NewLine) sb.Append(Environment.NewLine);
 
 			try{
 				File.WriteAllText(file, sb.ToString());
@@ -45,13 +48,11 @@ namespace _4mtr {
 			}
 		}
 
-		private static List<string> GetTextFileList(string[] args) {
-			var ignores = new List<string>();
-			ignores.Add("node_modules");
-
+		private static List<string> GetTextFileList(Options options) {
+			var ignores = new List<string>{ "node_modules" };
 			var files = new List<string>();
 
-			var inputs = args.ToList();
+			var inputs = options.Inputs.ToList<string>();
 			if(inputs.Count == 0) inputs.Add(Directory.GetCurrentDirectory());
 
 			foreach(var input in inputs){
